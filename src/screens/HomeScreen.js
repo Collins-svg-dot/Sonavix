@@ -15,15 +15,16 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 
-
-const HomeScreen = () => {
+const HomeScreen = ({route}) => {
+  const {username}= route.params|| {};
   // Animation values
   const logoOpacity = useSharedValue(0);
   const welcomeOpacity = useSharedValue(0);
   const greetingTranslateX = useSharedValue(-300);
   const searchBarWidth = useSharedValue('90%');
 
-  const navigation =useNavigation();
+  
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Trigger animations on component mount
@@ -57,9 +58,17 @@ const HomeScreen = () => {
     searchBarWidth.value = withSpring('90%', { damping: 15 });
   };
 
-  const openDrawer= () => {
+  const openDrawer = () => {
     navigation.openDrawer();
-  }
+  };
+
+  const navigateToLogin = () => {
+    navigation.navigate('Login');
+  };
+
+  const navigateToSignup = () => {
+    navigation.navigate('Signup');
+  };
 
   return (
     <View style={styles.container}>
@@ -76,23 +85,20 @@ const HomeScreen = () => {
 
       {/* Greeting Message */}
       <Animated.Text style={[styles.greetingText, greetingStyle]}>
-        {getTimeGreeting()}, User!
+        {getTimeGreeting()}, {username}
       </Animated.Text>
 
       {/* Login/Signup Buttons */}
       <View style={styles.authButtons}>
-        <TouchableOpacity>
-          <Text style={styles.authText}>Login</Text>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.authText}>Sign Up</Text>
-        </TouchableOpacity>
-      </View>
+  <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+    <Text style={styles.authText}>Login</Text>
+  </TouchableOpacity>
+  <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+    <Text style={styles.authText}>Sign Up</Text>
+  </TouchableOpacity>
+</View>
 
-      {/* Toggle Menu */}
-      <TouchableOpacity style={styles.toggleButton}>
-        <Text style={styles.toggleText} onPress={openDrawer}></Text>
-      </TouchableOpacity>
+
 
       {/* Search Bar */}
       <Animated.View style={[styles.searchBarContainer, searchBarStyle]}>
@@ -150,7 +156,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  
   toggleText: {
     color: '#FEFCFB',
     fontSize: 18,

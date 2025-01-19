@@ -31,9 +31,11 @@ const plans = [
 
 const PlansScreen = ({ navigation }) => {
   const handleSelectPlan = (plan) => {
-    // Navigate to Billing Screen with selected plan details
-    navigation.navigate('Billing', { selectedPlan: plan }); // plan should contain the selected plan data
-
+    if (plan.name === 'Free plan'){
+      navigation.navigate('Home');
+    }else{
+      navigation.navigate('Billing', { selectedPlan: plan });
+    }
   };
 
   return (
