@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,23 +7,26 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
-  withSpring 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
 } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 
-const HomeScreen = ({route}) => {
-  const {username}= route.params|| {};
+const HomeScreen = ({ route }) => {
+  const { username = 'Guest' } = route.params || {};
+
+  // State for search query
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Animation values
   const logoOpacity = useSharedValue(0);
   const welcomeOpacity = useSharedValue(0);
   const greetingTranslateX = useSharedValue(-300);
   const searchBarWidth = useSharedValue('90%');
 
-  
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -58,16 +61,18 @@ const HomeScreen = ({route}) => {
     searchBarWidth.value = withSpring('90%', { damping: 15 });
   };
 
-  const openDrawer = () => {
-    navigation.openDrawer();
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      // Navigate to MusicLibrary screen with the search query
+      navigation.navigate('MusicLibrary', { query: searchQuery });
+    } else {
+      alert("Please enter a search term");
+    }
   };
 
-  const navigateToLogin = () => {
-    navigation.navigate('Login');
-  };
-
-  const navigateToSignup = () => {
-    navigation.navigate('Signup');
+  const openProfile = () => {
+    // Navigate to Profile screen
+    navigation.navigate('Profile');
   };
 
   return (
@@ -83,22 +88,28 @@ const HomeScreen = ({route}) => {
         Welcome to Sonavix
       </Animated.Text>
 
-      {/* Greeting Message */}
-      <Animated.Text style={[styles.greetingText, greetingStyle]}>
-        {getTimeGreeting()}, {username}
-      </Animated.Text>
+      {/* Greeting Message and Profile Icon */}
+      <View style={styles.greetingContainer}>
+        <Animated.Text style={[styles.greetingText, greetingStyle]}>
+          {getTimeGreeting()}, {username}
+        </Animated.Text>
+        <TouchableOpacity style={styles.profileIconContainer} onPress={openProfile}>
+          <Image
+            source={require('../assets/images/profile.jpg')}
+            style={styles.profileIcon}
+          />
+        </TouchableOpacity>
+      </View>
 
       {/* Login/Signup Buttons */}
       <View style={styles.authButtons}>
-  <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-    <Text style={styles.authText}>Login</Text>
-  </TouchableOpacity>
-  <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-    <Text style={styles.authText}>Sign Up</Text>
-  </TouchableOpacity>
-</View>
-
-
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.authText}>Login</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+          <Text style={styles.authText}>Sign Up</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Search Bar */}
       <Animated.View style={[styles.searchBarContainer, searchBarStyle]}>
@@ -108,6 +119,9 @@ const HomeScreen = ({route}) => {
           placeholderTextColor="#034078"
           onFocus={handleSearchFocus}
           onBlur={handleSearchBlur}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearch}
         />
       </Animated.View>
     </View>
@@ -140,10 +154,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
+  greetingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   greetingText: {
     fontSize: 18,
     color: '#FEFCFB',
-    marginBottom: 20,
+    marginRight: 10,
+  },
+  profileIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#FEFCFB',
   },
   authButtons: {
     flexDirection: 'row',
@@ -155,10 +181,6 @@ const styles = StyleSheet.create({
     color: '#1282A2',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  toggleText: {
-    color: '#FEFCFB',
-    fontSize: 18,
   },
   searchBarContainer: {
     height: 40,

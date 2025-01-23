@@ -8,6 +8,8 @@ import BillingScreen from './src/screens/BillingScreen';
 import PlansScreen from './src/screens/PlansScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+import MusicLibraryScreen from './src/screens/MusicLibraryScreen';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -19,6 +21,8 @@ function HomeStack() {
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
+      <Stack.Screen name="Profile" component={ProfileScreen}/>
+      <Stack.Screen name="MusicLibrary" component={MusicLibraryScreen}/>
     </Stack.Navigator>
   );
 }

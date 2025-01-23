@@ -12,20 +12,17 @@ const LoginScreen = () => {
   const handleLogin = () => {
     const validationErrors = validateLoginForm(email, password); // Call validation logic
     setErrors(validationErrors);
-
-    if (Object.keys(validationErrors).length === 0) {
-      const normalizedEmail = email.trim().toLowerCase(); // Trim and convert email to lowercase
   
-      if (normalizedEmail === '' && password === '') {
-        Alert.alert('Login Successful');
-        navigation.replace('Home'); // Navigate to the Drawer after login
-      } else {
-        Alert.alert('Error', 'Invalid email or password');
-      }
+    if (Object.keys(validationErrors).length === 0) {
+      // If there are no validation errors, proceed
+      Alert.alert('Login Successful');
+      navigation.replace('Home'); // Navigate to the Drawer or Home screen after login
     } else {
+      // If validation errors exist, show an alert
       Alert.alert('Error', 'Please fix the validation errors');
     }
   };
+  
 
   return (
     <View style={styles.container}>
