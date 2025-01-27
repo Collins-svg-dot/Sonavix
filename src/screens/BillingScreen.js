@@ -6,9 +6,10 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  View,
 } from 'react-native';
 
-const BillingScreen = ({ route }) => {
+const BillingScreen = ({ route, navigation }) => {
   // Safely get selected plan details from route params
   const { selectedPlan } = route.params || {}; // Fallback to empty object if undefined
 
@@ -67,10 +68,27 @@ const BillingScreen = ({ route }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* Navigation Buttons */}
+      <View style={styles.navButtons}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.navButton}
+        >
+          <Text style={styles.navButtonText}>Go Back</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Home')}
+          style={styles.navButton}
+        >
+          <Text style={styles.navButtonText}>Go to Home</Text>
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.title}>Billing Information</Text>
 
       <Text style={styles.planInfo}>
-        You are paying for the <Text style={styles.planName}>{selectedPlan.name}</Text> plan.
+        You are paying for the{' '}
+        <Text style={styles.planName}>{selectedPlan.name}</Text> plan.
       </Text>
 
       {/* Card Number */}
@@ -119,6 +137,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+  },
+  navButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 20,
+  },
+  navButton: {
+    backgroundColor: '#034078',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  navButtonText: {
+    color: '#FEFCFB',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   title: {
     fontSize: 24,

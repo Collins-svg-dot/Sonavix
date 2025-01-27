@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,180 +6,130 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  ActivityIndicator,
+  Alert,
 } from 'react-native';
+import base64 from 'base-64';
 
-// Import the function to fetch tracks from the helper
-import { fetchTracks } from '../../sonavixApi'; 
-import { Audio } from 'expo-av';
-
-const MusicLibraryScreen = ({ route, navigation }) => {
-  const [tracks, setTracks] = useState([]);
+const MusicLibrary = () => {
+  const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { query = '' } = route.params || {};  // Get the query from route params
-  
-  const [isPlaying, setIsPlaying] = useState(false); // State to track if a song is playing
-  const [currentTrack, setCurrentTrack] = useState(null); // State to track current track
-  const sound = useRef(new Audio.Sound()); // Audio reference
 
-  // Fetch tracks when query changes
+  const CLIENT_ID = '699b7cb6393c4c849242145433d96aa1'; // Your Client ID
+  const CLIENT_SECRET = '3d9f0807cb944bb58b37d1aff8db56e2'; // Your Client Secret
+
   useEffect(() => {
-    const loadTracks = async () => {
-      setLoading(true);
+    const fetchData = async () => {
       try {
-        const fetchedTracks = await fetchTracks(query);  // Fetch tracks using the helper
-        setTracks(fetchedTracks);  // Set the fetched tracks in state
-      } catch (err) {
-        setError('Failed to load tracks. Please try again later.');
+        const token = await fetchSpotifyToken(CLIENT_ID, CLIENT_SECRET);
+        const tracks = await fetchSpotifySongs('music', token); // Example query
+        setSongs(tracks);
+      } catch (error) {
+        Alert.alert('Error', error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (query) {
-      loadTracks();
-    }
-  }, [query]);
+    fetchData();
+  }, []);
 
-  const handleTrackPress = async (track) => {
-    const previewUrl = track.preview_url;  // Get the dynamic preview URL for the track
-    console.log('Preview URL:', previewUrl);
-  
-    if (isPlaying && currentTrack?.id === track.id) {
-      await sound.current.stopAsync(); // Stop the track if it's already playing
-      setIsPlaying(false);
-    } else {
-      if (!previewUrl) {
-        alert('No preview available for this track!');
-        return;
+  const renderSong = ({ item }) => (
+    <TouchableOpacity
+      style={styles.songCard}
+      onPress={() =>
+        Alert.alert(
+          'Play Song',
+          `You selected: ${item.name}\nArtist: ${item.artists[0].name}`
+        )
       }
-  
-      try {
-        // Check if sound is still loading
-        if (sound.current._loading) {
-          console.log('Sound is already loading, please wait...');
-          return; // Prevent loading a new sound while the current one is still loading
-        }
-  
-        await sound.current.loadAsync({ uri: previewUrl });  // Load and play the track
-        await sound.current.playAsync();
-        setCurrentTrack(track);
-        setIsPlaying(true);
-      } catch (err) {
-        setError('Failed to play track.');
-        console.error(err);
-      }
-    }
-  };
-  
-  // Render each track item
-  const renderTrack = ({ item }) => (
-    <TouchableOpacity style={styles.trackCard} onPress={() => handleTrackPress(item)}>
+    >
       <Image
-        source={{
-          uri: item.album.images?.[0]?.url || 'https://via.placeholder.com/80',  // Fallback image if no image
-        }}
-        style={styles.trackImage}
+        source={{ uri: item.album.images[0]?.url }}
+        style={styles.songImage}
       />
-      <Text style={styles.trackTitle}>{item.name}</Text>
-      <Text style={styles.trackArtist}>{item.artists?.[0]?.name}</Text>
+      <View>
+        <Text style={styles.songName}>{item.name}</Text>
+        <Text style={styles.songArtist}>{item.artists[0]?.name}</Text>
+      </View>
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.loadingText}>Loading songs...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Go Back Button */}
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
-        <Text style={styles.goBackText}>Go Back</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.screenTitle}>Music Library</Text>
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#1282A2" />  // Loading state
-      ) : error ? (
-        <Text style={styles.errorMessage}>{error}</Text>  // Error message
-      ) : tracks.length === 0 ? (
-        <Text style={styles.emptyMessage}>No tracks found for "{query}"</Text>  // No tracks found
-      ) : (
-        <FlatList
-          data={tracks}
-          keyExtractor={(item, index) => item.id || `${item.name}-${index}`}
-          renderItem={renderTrack}
-          numColumns={2}
-          contentContainerStyle={styles.trackContainer}
-        />
-      )}
+      <Text style={styles.title}>Spotify Songs</Text>
+      <FlatList
+        data={songs}
+        keyExtractor={(item) => item.id}
+        renderItem={renderSong}
+      />
     </View>
   );
 };
 
+// Helper functions for token and song fetching
+const fetchSpotifyToken = async (clientId, clientSecret) => {
+  const tokenUrl = 'https://accounts.spotify.com/api/token';
+  const credentials = base64.encode(`${clientId}:${clientSecret}`);
+
+  const response = await fetch(tokenUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: `Basic ${credentials}`,
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Spotify token: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.access_token; // Use this token for API requests
+};
+
+const fetchSpotifySongs = async (query, token) => {
+  const apiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+    query
+  )}&type=track&limit=10`;
+
+  const response = await fetch(apiUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch songs: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.tracks.items; // Array of song objects
+};
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0A1128',
-    padding: 20,
-  },
-  goBackButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 10,
-    padding: 10,
-    backgroundColor: '#034078',
-    borderRadius: 5,
-  },
-  goBackText: {
-    color: '#FEFCFB',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  screenTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FEFCFB',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  trackContainer: {
-    justifyContent: 'center',
+  container: { flex: 1, backgroundColor: '#0A1128', padding: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#FEFCFB', marginBottom: 20 },
+  songCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  trackCard: {
-    backgroundColor: '#05183E',
-    borderRadius: 10,
+    marginBottom: 15,
+    backgroundColor: '#1282A2',
     padding: 10,
-    margin: 10,
-    alignItems: 'center',
-    width: '45%',
-  },
-  trackImage: {
-    width: 80,
-    height: 80,
     borderRadius: 10,
-    marginBottom: 10,
   },
-  trackTitle: {
-    color: '#1282A2',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  trackArtist: {
-    color: '#FEFCFB',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  emptyMessage: {
-    color: '#FEFCFB',
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 50,
-  },
-  errorMessage: {
-    color: '#FF0000',
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 20,
-  },
+  songImage: { width: 60, height: 60, borderRadius: 5, marginRight: 10 },
+  songName: { fontSize: 16, fontWeight: 'bold', color: '#FEFCFB' },
+  songArtist: { fontSize: 14, color: '#FEFCFB' },
+  loadingText: { color: '#FEFCFB', fontSize: 18, marginTop: 20 },
 });
 
-export default MusicLibraryScreen;
+export default MusicLibrary;
