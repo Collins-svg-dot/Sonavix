@@ -17,11 +17,8 @@ import { useNavigation } from '@react-navigation/native';
 
 const HomeScreen = ({ route }) => {
   const { username = 'Guest' } = route.params || {};
-
-  // State for search query
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Animation values
   const logoOpacity = useSharedValue(0);
   const welcomeOpacity = useSharedValue(0);
   const greetingTranslateX = useSharedValue(-300);
@@ -30,13 +27,11 @@ const HomeScreen = ({ route }) => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    // Trigger animations on component mount
     logoOpacity.value = withTiming(1, { duration: 1000 });
     welcomeOpacity.value = withTiming(1, { duration: 1500 });
     greetingTranslateX.value = withSpring(0, { damping: 10 });
   }, []);
 
-  // Animated styles
   const logoStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
   }));
@@ -63,32 +58,27 @@ const HomeScreen = ({ route }) => {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      // Navigate to MusicLibrary screen with the search query
       navigation.navigate('MusicLibrary', { query: searchQuery });
     } else {
-      alert("Please enter a search term");
+      alert('Please enter a search term');
     }
   };
 
   const openProfile = () => {
-    // Navigate to Profile screen
     navigation.navigate('Profile');
   };
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <Animated.Image
         source={require('../assets/images/Preview.png')}
         style={[styles.logo, logoStyle]}
       />
 
-      {/* Welcome Message */}
       <Animated.Text style={[styles.welcomeText, welcomeStyle]}>
         Welcome to Sonavix
       </Animated.Text>
 
-      {/* Greeting Message and Profile Icon */}
       <View style={styles.greetingContainer}>
         <Animated.Text style={[styles.greetingText, greetingStyle]}>
           {getTimeGreeting()}, {username}
@@ -101,7 +91,6 @@ const HomeScreen = ({ route }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Login/Signup Buttons */}
       <View style={styles.authButtons}>
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
           <Text style={styles.authText}>Login</Text>
@@ -111,7 +100,6 @@ const HomeScreen = ({ route }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Search Bar */}
       <Animated.View style={[styles.searchBarContainer, searchBarStyle]}>
         <TextInput
           style={styles.searchBar}

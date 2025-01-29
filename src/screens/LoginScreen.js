@@ -12,7 +12,7 @@ const LoginScreen = () => {
   const handleLogin = () => {
     const validationErrors = validateLoginForm(email, password); // Call validation logic
     setErrors(validationErrors);
-  
+
     if (Object.keys(validationErrors).length === 0) {
       // If there are no validation errors, proceed
       Alert.alert('Login Successful');
@@ -22,7 +22,6 @@ const LoginScreen = () => {
       Alert.alert('Error', 'Please fix the validation errors');
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -55,6 +54,14 @@ const LoginScreen = () => {
 
       <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
         <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
+      </TouchableOpacity>
+
+      {/* Button to go back to the Homepage */}
+      <TouchableOpacity
+        style={[styles.button, styles.homeButton]}
+        onPress={() => navigation.navigate('Home')}
+      >
+        <Text style={styles.buttonText}>Go to Homepage</Text>
       </TouchableOpacity>
     </View>
   );
@@ -90,6 +97,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
+  },
+  homeButton: {
+    marginTop: 20, // Add spacing specifically for the "Go to Homepage" button
+    backgroundColor: '#034078', // A different shade for distinction
   },
   buttonText: {
     color: '#FEFCFB',

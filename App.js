@@ -9,7 +9,9 @@ import PlansScreen from './src/screens/PlansScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
-import MusicLibraryScreen from './src/screens/MusicLibraryScreen';
+import MusicLibraryScreen  from './src/screens/MusicLibraryScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+import FavoritesScreen from './src/screens/FavouritesScreen';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -23,6 +25,8 @@ function HomeStack() {
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen}/>
       <Stack.Screen name="MusicLibrary" component={MusicLibraryScreen}/>
+      <Stack.Screen name="FavoritesScreen"  component={FavoritesScreen}/>
+
     </Stack.Navigator>
   );
 }
@@ -31,11 +35,12 @@ export default function App() {
   return (
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="Home">
-        {/* Only the HomeStack will include Login and Signup */}
+        
         <Drawer.Screen name="Home" component={HomeStack} />
         <Drawer.Screen name="About" component={AboutScreen} />
         <Drawer.Screen name="Billing" component={BillingScreen} />
         <Drawer.Screen name="Plans" component={PlansScreen} />
+        <Drawer.Screen name="Settings" component={SettingsScreen}/>
       </Drawer.Navigator>
     </NavigationContainer>
   );

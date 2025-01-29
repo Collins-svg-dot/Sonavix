@@ -1,135 +1,155 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   FlatList,
+  Image,
   TouchableOpacity,
   StyleSheet,
-  Image,
-  Alert,
+  ActivityIndicator,
 } from 'react-native';
-import base64 from 'base-64';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { fetchTracks } from '../../SonavixApi';
 
-const MusicLibrary = () => {
-  const [songs, setSongs] = useState([]);
-  const [loading, setLoading] = useState(true);
+const MusicLibraryScreen = () => {
+  const route = useRoute();
+  const navigation = useNavigation();
+  const { query } = route.params || ''; // Get query from navigation
 
-  const CLIENT_ID = '699b7cb6393c4c849242145433d96aa1'; // Your Client ID
-  const CLIENT_SECRET = '3d9f0807cb944bb58b37d1aff8db56e2'; // Your Client Secret
+  const [tracks, setTracks] = useState([]);
+  const [favorites, setFavorites] = useState([]); // Track favorite songs
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = await fetchSpotifyToken(CLIENT_ID, CLIENT_SECRET);
-        const tracks = await fetchSpotifySongs('music', token); // Example query
-        setSongs(tracks);
-      } catch (error) {
-        Alert.alert('Error', error.message);
-      } finally {
-        setLoading(false);
+    if (query) {
+      searchTracks(query); // Automatically search with the passed query
+    }
+  }, [query]);
+
+  const searchTracks = async (searchQuery) => {
+    setLoading(true);
+    const fetchedTracks = await fetchTracks(searchQuery);
+    setTracks(fetchedTracks);
+    setLoading(false);
+  };
+
+  const toggleFavorite = (track) => {
+    setFavorites((prevFavorites) => {
+      if (prevFavorites.some((fav) => fav.id === track.id)) {
+        // If already in favorites, remove it
+        return prevFavorites.filter((fav) => fav.id !== track.id);
+      } else {
+        // Otherwise, add to favorites
+        return [...prevFavorites, track];
       }
-    };
+    });
+  };
 
-    fetchData();
-  }, []);
+  const renderTrack = ({ item }) => {
+    const isFavorite = favorites.some((fav) => fav.id === item.id);
 
-  const renderSong = ({ item }) => (
-    <TouchableOpacity
-      style={styles.songCard}
-      onPress={() =>
-        Alert.alert(
-          'Play Song',
-          `You selected: ${item.name}\nArtist: ${item.artists[0].name}`
-        )
-      }
-    >
-      <Image
-        source={{ uri: item.album.images[0]?.url }}
-        style={styles.songImage}
-      />
-      <View>
-        <Text style={styles.songName}>{item.name}</Text>
-        <Text style={styles.songArtist}>{item.artists[0]?.name}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  if (loading) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading songs...</Text>
-      </View>
+      <TouchableOpacity style={styles.trackCard}>
+        <Image source={{ uri: item.album.images[0].url }} style={styles.trackImage} />
+        <View style={styles.trackInfo}>
+          <Text style={styles.trackTitle}>{item.name}</Text>
+          <Text style={styles.trackArtist}>{item.artists[0].name}</Text>
+        </View>
+        <TouchableOpacity onPress={() => toggleFavorite(item)} style={styles.favoriteButton}>
+          <Text style={[styles.favoriteIcon, isFavorite && styles.favoriteActive]}>
+            {isFavorite ? '❤️' : '🤍'}
+          </Text>
+        </TouchableOpacity>
+      </TouchableOpacity>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Spotify Songs</Text>
-      <FlatList
-        data={songs}
-        keyExtractor={(item) => item.id}
-        renderItem={renderSong}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#1282A2" />
+      ) : (
+        <FlatList
+          data={tracks}
+          keyExtractor={(item) => item.id}
+          renderItem={renderTrack}
+        />
+      )}
+      <TouchableOpacity
+        style={styles.favoritesButton}
+        onPress={() => navigation.navigate('FavoritesScreen', { favorites })}
+      >
+        <Text style={styles.favoritesButtonText}>View Favorites</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
-// Helper functions for token and song fetching
-const fetchSpotifyToken = async (clientId, clientSecret) => {
-  const tokenUrl = 'https://accounts.spotify.com/api/token';
-  const credentials = base64.encode(`${clientId}:${clientSecret}`);
-
-  const response = await fetch(tokenUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${credentials}`,
-    },
-    body: 'grant_type=client_credentials',
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Spotify token: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.access_token; // Use this token for API requests
-};
-
-const fetchSpotifySongs = async (query, token) => {
-  const apiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-    query
-  )}&type=track&limit=10`;
-
-  const response = await fetch(apiUrl, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch songs: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.tracks.items; // Array of song objects
-};
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A1128', padding: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#FEFCFB', marginBottom: 20 },
-  songCard: {
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#0A1128',
+  },
+  trackCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
-    backgroundColor: '#1282A2',
     padding: 10,
-    borderRadius: 10,
+    marginVertical: 5,
+    backgroundColor: '#034078',
+    borderRadius: 8,
   },
-  songImage: { width: 60, height: 60, borderRadius: 5, marginRight: 10 },
-  songName: { fontSize: 16, fontWeight: 'bold', color: '#FEFCFB' },
-  songArtist: { fontSize: 14, color: '#FEFCFB' },
-  loadingText: { color: '#FEFCFB', fontSize: 18, marginTop: 20 },
+  trackImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+    marginRight: 10,
+  },
+  trackInfo: {
+    flex: 1,
+  },
+  trackTitle: {
+    color: '#FEFCFB',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  trackArtist: {
+    color: '#FEFCFB',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  favoriteButton: {
+    marginLeft: 10,
+  },
+  favoriteIcon: {
+    fontSize: 18,
+    color: '#FEFCFB',
+  },
+  favoriteActive: {
+    color: '#FF4D6D',
+  },
+  favoritesButton: {
+    padding: 10,
+    backgroundColor: '#1282A2',
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  favoritesButtonText: {
+    color: '#FEFCFB',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  title: {
+    fontSize: 24,
+    color: '#FEFCFB',
+    marginBottom: 20,
+  },
+  emptyText: {
+    color: '#FEFCFB',
+    textAlign: 'center',
+    marginTop: 20,
+  },
 });
 
-export default MusicLibrary;
+export default MusicLibraryScreen;
