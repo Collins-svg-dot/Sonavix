@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { validateLoginForm } from '../utils/validationLoginform';
 
@@ -9,16 +10,29 @@ const LoginScreen = () => {
   const [errors, setErrors] = useState({});
   const navigation = useNavigation();
 
-  const handleLogin = () => {
-    const validationErrors = validateLoginForm(email, password); // Call validation logic
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkLoginStatus = async () => {
+      const isAuthenticated = await AsyncStorage.getItem('isAuthenticated');
+      if (isAuthenticated === 'true') {
+        navigation.navigate('DrawerNavigator', { screen: 'Home' });
+        // Redirect to the main app
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
+  const handleLogin = async () => {
+    const validationErrors = validateLoginForm(email, password);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      // If there are no validation errors, proceed
+      // Save authentication state
+      await AsyncStorage.setItem('isAuthenticated', 'true');
       Alert.alert('Login Successful');
-      navigation.replace('Home'); // Navigate to the Drawer or Home screen after login
+      navigation.navigate('DrawerNavigator', { screen: 'Home' });
+      // Navigate to main app
     } else {
-      // If validation errors exist, show an alert
       Alert.alert('Error', 'Please fix the validation errors');
     }
   };
@@ -56,7 +70,7 @@ const LoginScreen = () => {
         <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
 
-      {/* Button to go back to the Homepage */}
+      {/* Go to Homepage Button */}
       <TouchableOpacity
         style={[styles.button, styles.homeButton]}
         onPress={() => navigation.navigate('Home')}
@@ -99,8 +113,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   homeButton: {
-    marginTop: 20, // Add spacing specifically for the "Go to Homepage" button
-    backgroundColor: '#034078', // A different shade for distinction
+    marginTop: 20,
+    backgroundColor: '#034078',
   },
   buttonText: {
     color: '#FEFCFB',
