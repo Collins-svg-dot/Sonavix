@@ -48,12 +48,14 @@ const SplashScreen = () => {
 
         // Wait for the audio to finish before navigating
         setTimeout(() => {
-          navigation.navigate("Home"); // Navigate to the "Home" screen
+          navigation.navigate('Home');
+ // Navigate to the "Home" screen
         }, 5000); // Adjust this to match the total duration of your splash screen (audio + animation)
 
       } catch (error) {
         console.error("Error playing audio:", error);
-        navigation.navigate("Home"); 
+        navigation.navigate('HomeStack', { screen: 'Home' });
+
       }
     };
 

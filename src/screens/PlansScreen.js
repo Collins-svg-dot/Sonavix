@@ -33,6 +33,7 @@ const PlansScreen = ({ navigation }) => {
   const handleSelectPlan = (plan) => {
     if (plan.name === 'Free plan'){
       navigation.navigate('Home');
+
     }else{
       navigation.navigate('Billing', { selectedPlan: plan });
     }

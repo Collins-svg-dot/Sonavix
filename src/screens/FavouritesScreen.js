@@ -23,7 +23,8 @@ const FavoritesScreen = ({ route }) => {
       {/* Buttons to go back and navigate to home */}
       <View style={styles.buttonContainer}>
         <Button title="Go Back" onPress={() => navigation.goBack()} />
-        <Button title="Home" onPress={() => navigation.navigate('Home')} />
+        <Button title="Home" onPress={() => navigation.navigate('Home')}
+ />
       </View>
 
       {favorites.length > 0 ? (

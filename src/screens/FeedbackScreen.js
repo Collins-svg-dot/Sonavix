@@ -75,7 +75,8 @@ const FeedbackScreen = () => {
       </TouchableOpacity>
 
       {/* Go Back to Home Button */}
-      <TouchableOpacity style={styles.homeButton} onPress={() => navigation.navigate('Home')}>
+      <TouchableOpacity style={styles.homeButton}onPress={() => navigation.navigate('Home')}>
+      
         <Text style={styles.homeButtonText}>Go Back to Home</Text>
       </TouchableOpacity>
     </View>

@@ -77,7 +77,8 @@ const BillingScreen = ({ route, navigation }) => {
           <Text style={styles.navButtonText}>Go Back</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Home')}
+         onPress={() => navigation.navigate('Home')}
+
           style={styles.navButton}
         >
           <Text style={styles.navButtonText}>Go to Home</Text>

@@ -89,7 +89,7 @@ const HomeScreen = ({ route }) => {
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
             <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Signup')}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SignUp')}>
             <Text style={styles.buttonText}>Signup</Text>
           </TouchableOpacity>
         </View>
