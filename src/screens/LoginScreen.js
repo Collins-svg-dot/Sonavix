@@ -9,7 +9,7 @@ const LoginScreen = () => {
 
   // Handle login
   const handleLogin = () => {
-    console.log('Login button pressed'); // Debugging log to check if button press is detected
+    console.log('Login button pressed'); 
 
     if (!email || !password) {
       Alert.alert('Error', 'Email and Password are required');
@@ -18,7 +18,7 @@ const LoginScreen = () => {
 
     // Simulate a successful login
     Alert.alert('Login Successful');
-
+ const username='Guest';
     // Navigate to Home screen
     navigation.reset({
       index: 0,
