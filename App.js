@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import HomeScreen from './src/screens/HomeScreen';
 import AboutScreen from './src/screens/AboutScreen';
 import BillingScreen from './src/screens/BillingScreen';
@@ -15,6 +14,9 @@ import FavoritesScreen from './src/screens/FavouritesScreen';
 import FeedbackScreen from './src/screens/FeedbackScreen';
 import SplashScreen from './src/screens/SplashScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
+import PlaylistScreen from './src/screens/PlaylistScreen'; // New Playlist screen
+import { PlaylistProvider } from './src/components/playlistContext';
+import HomeTabs from './src/components/HomeTabs';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -22,29 +24,30 @@ const Stack = createStackNavigator();
 export default function App() {
   const [isSplashDone, setIsSplashDone] = useState(false);
 
-
   useEffect(() => {
-
+    // Show splash screen for 4 seconds
     setTimeout(() => {
       setIsSplashDone(true);
-    }, 4000); // 4 seconds for the splash screen
+    }, 4000);
   }, []);
 
-  // Stack Navigator for Home, Login, and Signup screens
-  function HomeStack() {
+  // HomeStack now includes PlaylistScreen
+  function HomeStack({route}) {
+    const initialParams= route?.params
     return (
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="HomeTabs" component={HomeTabs} initialParams={initialParams} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="MusicLibrary" component={MusicLibraryScreen} />
         <Stack.Screen name="FavoritesScreen" component={FavoritesScreen} />
-        <Stack.Screen name="SignUp" component={SignUpScreen}/>
+        <Stack.Screen name="Playlist" component={PlaylistScreen} />
       </Stack.Navigator>
     );
   }
 
-  // Drawer Navigator that includes the HomeStack
+  // DrawerNavigator includes HomeStack and other screens but not PlaylistScreen
   function DrawerNavigator() {
     return (
       <Drawer.Navigator initialRouteName="Home">
@@ -59,8 +62,10 @@ export default function App() {
   }
 
   return (
+    <PlaylistProvider>
     <NavigationContainer>
       {isSplashDone ? <DrawerNavigator /> : <SplashScreen />}
     </NavigationContainer>
+    </PlaylistProvider>
   );
 }

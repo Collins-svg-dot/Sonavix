@@ -26,7 +26,7 @@ const SignUpScreen = () => {
     // Navigate to Home screen
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Home', params: {username} }],
+      routes: [{ name: 'Home', params: {username, email} }],
     });
   };
 

@@ -44,7 +44,7 @@ const getTimeGreeting = () => {
 
 const HomeScreen = ({ route }) => {
   const navigation = useNavigation();
-  const { username = 'Guest' } = route?.params || {}; // Avoid undefined errors
+  const { username ='Guest'} = route?.params || {}; // Avoid undefined errors
   const [searchQuery, setSearchQuery] = useState('');
 
   const logoOpacity = useSharedValue(0);
@@ -152,6 +152,7 @@ const HomeScreen = ({ route }) => {
           )}
           keyExtractor={(item) => item.id}
         />
+        
       </ScrollView>
     </View>
   );

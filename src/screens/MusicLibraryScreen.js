@@ -7,11 +7,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { fetchTracks } from '../../SonavixApi';
+import { usePlaylist } from '../components/playlistContext';
 
 const MusicLibraryScreen = () => {
+  const { playlists, addToPlaylist } = usePlaylist(); // using addToPlaylist from context
   const route = useRoute();
   const navigation = useNavigation();
   const { query } = route.params || ''; // Get query from navigation
@@ -28,8 +31,13 @@ const MusicLibraryScreen = () => {
 
   const searchTracks = async (searchQuery) => {
     setLoading(true);
-    const fetchedTracks = await fetchTracks(searchQuery);
-    setTracks(fetchedTracks);
+    try {
+      const fetchedTracks = await fetchTracks(searchQuery);
+      setTracks(fetchedTracks);
+    } catch (error) {
+      console.error('Error fetching tracks:', error);
+      Alert.alert('Error', 'Failed to fetch tracks.');
+    }
     setLoading(false);
   };
 
@@ -45,11 +53,22 @@ const MusicLibraryScreen = () => {
     });
   };
 
+  // Function to add track to a default playlist ("My Playlist")
+  const handleAddToPlaylist = (track) => {
+    // Check if the default playlist exists; if not, alert user to create one.
+    if (!playlists['My Playlist']) {
+      Alert.alert('No Playlist', 'Please create "My Playlist" first.');
+      return;
+    }
+    addToPlaylist('My Playlist', track);
+    Alert.alert('Success', `Added "${track.name}" to My Playlist`);
+  };
+
   const renderTrack = ({ item }) => {
     const isFavorite = favorites.some((fav) => fav.id === item.id);
 
     return (
-      <TouchableOpacity style={styles.trackCard}>
+      <View style={styles.trackCard}>
         <Image source={{ uri: item.album.images[0].url }} style={styles.trackImage} />
         <View style={styles.trackInfo}>
           <Text style={styles.trackTitle}>{item.name}</Text>
@@ -60,7 +79,10 @@ const MusicLibraryScreen = () => {
             {isFavorite ? '❤️' : '🤍'}
           </Text>
         </TouchableOpacity>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleAddToPlaylist(item)} style={styles.playlistButton}>
+          <Text style={styles.playlistButtonText}>Add to Playlist</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -73,6 +95,9 @@ const MusicLibraryScreen = () => {
           data={tracks}
           keyExtractor={(item) => item.id}
           renderItem={renderTrack}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No tracks found. Try a different query.</Text>
+          }
         />
       )}
       <TouchableOpacity
@@ -128,6 +153,16 @@ const styles = StyleSheet.create({
   favoriteActive: {
     color: '#FF4D6D',
   },
+  playlistButton: {
+    marginLeft: 10,
+    padding: 5,
+    backgroundColor: '#1282A2',
+    borderRadius: 5,
+  },
+  playlistButtonText: {
+    color: '#FEFCFB',
+    fontSize: 12,
+  },
   favoritesButton: {
     padding: 10,
     backgroundColor: '#1282A2',
@@ -139,11 +174,6 @@ const styles = StyleSheet.create({
     color: '#FEFCFB',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  title: {
-    fontSize: 24,
-    color: '#FEFCFB',
-    marginBottom: 20,
   },
   emptyText: {
     color: '#FEFCFB',

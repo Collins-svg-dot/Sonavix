@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username,setUsername] = useState('');
   const navigation = useNavigation();
 
   // Handle login
@@ -18,11 +19,11 @@ const LoginScreen = () => {
 
     // Simulate a successful login
     Alert.alert('Login Successful');
- const username='Guest';
+
     // Navigate to Home screen
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Home', params: {username}}],
+      routes: [{ name: 'Home', params: {username, email}}],
     });
   };
 
@@ -48,6 +49,14 @@ const LoginScreen = () => {
         secureTextEntry
         placeholderTextColor="#aaa"
       />
+      <TextInput
+              style={styles.input}
+              placeholder="Username"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              placeholderTextColor="#aaa"
+            />
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
@@ -56,6 +65,14 @@ const LoginScreen = () => {
       <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
         <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
+
+       {/* go to home button*/}
+      <TouchableOpacity style= {styles.home} onPress={() =>{
+       console.log(' go to home when pressed')
+       navigation.navigate('HomeTabs')}}>
+        <Text style={styles.homeText}>Go to Home</Text>
+      </TouchableOpacity>
+
     </View>
   );
 };
@@ -65,7 +82,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', color: '#FEFCFB', textAlign: 'center', marginBottom: 20 },
   input: { height: 50, backgroundColor: '#FEFCFB', borderRadius: 5, paddingHorizontal: 15, marginBottom: 10, color: '#0A1128' },
   button: { backgroundColor: '#1282A2', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 10 },
-  buttonText: { color: '#FEFCFB', fontWeight: 'bold', fontSize: 16 },
+  homeText: { color: '#FEFCFB', fontWeight: 'bold', fontSize: 16 },
+  home:{backgroundColor: '#1282A2', padding: 15, borderRadius: 5, alignItems: 'center', marginTop: 10 },
   linkText: { color: '#1282A2', textAlign: 'center', marginTop: 15 },
 });
 
