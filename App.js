@@ -32,8 +32,8 @@ export default function App() {
   }, []);
 
   // HomeStack now includes PlaylistScreen
-  function HomeStack({route}) {
-    const initialParams= route?.params
+  function HomeStack({ route }) {
+    const initialParams = route?.params;
     return (
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="HomeTabs" component={HomeTabs} initialParams={initialParams} />
@@ -63,9 +63,9 @@ export default function App() {
 
   return (
     <PlaylistProvider>
-    <NavigationContainer>
-      {isSplashDone ? <DrawerNavigator /> : <SplashScreen />}
-    </NavigationContainer>
+      <NavigationContainer>
+        {isSplashDone ? <DrawerNavigator /> : <SplashScreen />}
+      </NavigationContainer>
     </PlaylistProvider>
   );
 }
